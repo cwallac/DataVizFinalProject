@@ -30,7 +30,7 @@ function run () {
 	d3.json("data/rawCoordinates.json", function(json) {
     console.log(json);
     MBTA_COORD = json;
-    dataSetsLoaded += 1;
+    DATASET_LOADED += 1;
     if (DATASET_LOADED === DATASET_MAX) {
     	drawMap();
     }
@@ -40,7 +40,7 @@ function run () {
 	d3.json("data/stationPaths.json", function(json) {
 		console.log(json);
 		MBTA_NETWORK = json;
-		dataSetsLoaded += 1;
+		DATASET_LOADED += 1;
 		if (DATASET_LOADED === DATASET_MAX) {
 			drawMap();
 		}
@@ -85,14 +85,34 @@ function drawMap() {
 			var firstY = firstNode.attr("cy");
 			var secondX = secondNode.attr("cx");
 			var secondY = secondNode.attr("cy");
+			var positions = accountForStations(firstX, firstY, secondX, secondY, 5, 5);
 			mbtaMap.append("line")
-				.attr("x1", firstX)
-				.attr("x2", secondX)
-				.attr("y1", firstY)
-				.attr("y2", secondY)
+				.attr("x1", positions["x1"])
+				.attr("x2", positions["x2"])
+				.attr("y1", positions["y1"])
+				.attr("y2", positions["y2"])
 				.attr("stroke-width","2")
 				.attr("stroke", MBTA_COLOR[color])
     						
     	}
     }
+}
+
+/**
+*Nitpicky function to remove overhang of miscolored lines on T-stations
+*Does some trig to figure out how far it will be
+*/
+function accountForStations(x1, y1, x2, y2, radius1, radius2) {
+	var angle = Math.atan2(y2 - y1, x2 - x1);
+	console.log(angle*180/3.14);
+	console.log(Math.sin(angle));
+	console.log(Math.cos(angle));
+	var calculatedObject = {};
+	calculatedObject["x1"] = parseFloat(x1) + Math.cos(angle) * radius1;
+	calculatedObject["x2"] = parseFloat(x2) - Math.cos(angle) * radius2;
+	calculatedObject["y1"] = parseFloat(y1) + Math.sin(angle) * radius1;
+	calculatedObject["y2"] = parseFloat(y2) - Math.sin(angle) * radius2;
+	console.log(calculatedObject);
+	return calculatedObject;
+
 }
