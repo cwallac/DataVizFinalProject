@@ -15,6 +15,8 @@ var MBTA_COLOR = {
 	3: "orange"
 }
 
+var TOOLTIP = {width:150, height:80}
+
 var MBTA_COORD = {};
 var MBTA_NETWORK = [];
 var MBTA_MAPPING = {};
@@ -276,37 +278,71 @@ function drawMap() {
     }
 }
 
-var TOOLTIP = {width:75, height:40}
+
 
 function showToolTip (cx,cy,text1,text2) {
 
     var svg = d3.select("#mbtaMap");
+    var yDirection = 1;
+    var Y_OFFSET = 90;
 
-    svg.append("rect")
-    .attr("class","tooltip1")
-    .attr("x",cx-TOOLTIP.width/2)
-    .attr("y",50+cy-TOOLTIP.height/2)
-    .attr("width",TOOLTIP.width)
-    .attr("height",TOOLTIP.height)
-    .style("fill","#99959b")
-    .style("stroke","#000000")
-    .style("stroke-width","2px");
+    var X_OFFSET = 0;
 
-    svg.append("text")
+    if (cx - TOOLTIP.width/2 < 0) {
+        X_OFFSET = 90;
+    }
+
+    if (cx + TOOLTIP.width/2 > SVG_SIZE) {
+        X_OFFSET = -90;
+    }
+
+    console.log(cy);
+    console.log(TOOLTIP.height/2);
+    if (cy + TOOLTIP.height/2 + Y_OFFSET > SVG_SIZE) {
+        yDirection = -1;
+    }
+
+    var box = svg.append("rect");
+    box
+        .attr("class","tooltip1")
+        .attr("x",cx-  TOOLTIP.width/2 + X_OFFSET)
+        .attr("y",yDirection * Y_OFFSET+cy-TOOLTIP.height/2)
+        .attr("width",TOOLTIP.width)
+        .attr("height",TOOLTIP.height)
+        .style("fill","rgba(128,128,128, 0.5)")
+        .style("stroke","#000000")
+        .style("stroke-width","2px");
+
+    var stationText = svg.append("text");
+    stationText
     .attr("class","tooltip1")
-    .attr("x",cx)
-    .attr("y",50+cy-7)
+    .attr("x",cx + X_OFFSET)
+    .attr("y",yDirection * Y_OFFSET+cy-7)
     .attr("dy","0.3em")
     .style("text-anchor","middle")
+    .style("font-size",24)
     .text(text1);
 
     svg.append("text")
     .attr("class","tooltip1")
-    .attr("x",cx)
-    .attr("y",50+cy+7)
+    .attr("x",cx + X_OFFSET)
+    .attr("y",yDirection * Y_OFFSET+cy+20)
     .attr("dy","0.3em")
     .style("text-anchor","middle")
+    .style("font-size",20)
     .text(text2);
+
+    if (parseInt(box.attr("width")) < stationText.node().getComputedTextLength()) {
+        var correctWidth = stationText.node().getComputedTextLength() + 15;
+        box.attr("width", correctWidth);
+        box.attr("x", cx - correctWidth/2);
+        stationText.attr("x");
+    }
+
+
+
+
+
 
 }
 
