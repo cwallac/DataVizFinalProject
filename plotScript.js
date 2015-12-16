@@ -73,6 +73,21 @@ function drawMap() {
     				}
     			}
     		})
+            .on("mouseover", function(d) {
+                this.style.fill = "#772310";
+                showToolTip(SVG_SCALE(parseFloat(d.value[0])), SVG_SCALE(parseFloat(d.value[1])), "Station", "Entries");
+            })
+            .on("mouseout", function(d) {
+                hideToolTip();
+                for (var color = 0; color < MBTA_NETWORK.length; color ++) {
+                    for (var i =0; i < MBTA_NETWORK[color].length; i++) {
+                        if (d.key == MBTA_NETWORK[color][i]) {
+                            this.style.fill = MBTA_COLOR[color];
+                        }
+                            
+                    }
+                }
+            })
     		.attr("r", 5);
 
     var mbtaMap = d3.select("#mbtaMap");
@@ -96,6 +111,45 @@ function drawMap() {
     						
     	}
     }
+}
+
+var TOOLTIP = {width:75, height:40}
+
+function showToolTip (cx,cy,text1,text2) {
+
+    var svg = d3.select("#mbtaMap");
+
+    svg.append("rect")
+    //.attr("class","tooltip")
+    .attr("x",cx-TOOLTIP.width/2)
+    .attr("y",cy-TOOLTIP.height/2)
+    .attr("width",TOOLTIP.width)
+    .attr("height",TOOLTIP.height)
+    .style("fill","#99959b")
+    .style("stroke","#000000")
+    .style("stroke-width","2px");
+
+    svg.append("text")
+    //.attr("class","tooltip")
+    .attr("x",cx)
+    .attr("y",cy-7)
+    .attr("dy","0.3em")
+    .style("text-anchor","middle")
+    .text(text1);
+
+    svg.append("text")
+    //.attr("class","tooltip")
+    .attr("x",cx)
+    .attr("y",cy+7)
+    .attr("dy","0.3em")
+    .style("text-anchor","middle")
+    .text(text2);
+
+}
+
+function hideToolTip () {
+    d3.selectAll("rect").remove();
+    d3.selectAll("text").remove();
 }
 
 /**
