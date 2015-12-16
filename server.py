@@ -26,18 +26,18 @@ from json import dumps
 
 MORTALITYDB = "mbta.db"
 
-# SELECT station, SUM(entries), SUM(exits) FROM station 
-# WHERE datetime > "2014-02-01 04:32:00" AND datetime < "2014-02-01 05:41:00" GROUP BY station;
-
-def pullData ():
+def pullData (start, end):
+    print start
+    print end
     conn = sqlite3.connect(MORTALITYDB)
     cur = conn.cursor()
 
     try: 
         cur.execute("""SELECT station, SUM(entries) as sumEntries, SUM(exits) as sumExits
                        FROM mbta
-                       WHERE datetime >= '2014-02-01 04:32:00'
-                        AND datetime <= '2014-02-01 05:41:00' GROUP by station""")
+                       WHERE datetime >= ?
+                        AND datetime <= ? 
+                        GROUP by station""", (start, end))
         
         data = [{"station": station,
                  "sumEntries":int(sumEntries),
@@ -54,19 +54,16 @@ def pullData ():
         conn.close()
         raise
   
-       
-@get('/data')
-def data ():
-    return pullData()
 
 @post('/data')
 def data():
-    start = request.forms.get('start')
-    end = request.forms.get('end')
+    start = request.json.get("start")
+    end = request.json.get("end")
+    return pullData(start, end)
 
 
 @get('/<name>')
-def static (name="project4.html"):
+def static (name="index.html"):
     return static_file(name, root='.')
 
 def main (p):
