@@ -24,16 +24,23 @@ from bottle import response
 from json import dumps
 
 
-MORTALITYDB = "mbta.db"
+MBTADB = "mbta.db"
 
 def pullData (start, end):
     print start
     print end
-    conn = sqlite3.connect(MORTALITYDB)
+    conn = sqlite3.connect(MBTADB)
     cur = conn.cursor()
 
+# (
+#                             SELECT station, SUM(entries) as sumEntries, SUM(exits) as sumExits, 
+#                             FROM mbta
+#                             WHERE datetime >= ?
+#                             AND datetime <= ? 
+#                             GROUP by station
+#                         )
     try: 
-        cur.execute("""SELECT station, SUM(entries) as sumEntries, SUM(exits) as sumExits
+        cur.execute("""SELECT station, SUM(entries), SUM(exits)
                        FROM mbta
                        WHERE datetime >= ?
                         AND datetime <= ? 
@@ -45,9 +52,15 @@ def pullData (start, end):
                  } for (station, sumEntries, sumExits,) in  cur.fetchall()]
         conn.close()
 
-        print data
+        maxEntry = max(set([r["sumEntries"] for r in data]))
+        maxExit = max(set([r["sumExits"] for r in data]))    
 
-        return {"data":data}
+
+
+        return {"data":data,
+                "maxEntry": maxEntry,
+                "maxExit": maxExit
+                }
 
     except: 
         print "ERROR!!!"
@@ -62,16 +75,16 @@ def data():
     return pullData(start, end)
 
 @get('/data/rawCoordinates.json')
-def data():
+def raw():
     return static_file("data/rawCoordinates.json", root='.')    
 
 @get('/data/stationPaths.json')
-def data():
+def station():
     return static_file("data/stationPaths.json", root='.')    
 
-# @get('/data/rawCoordinates.json')
-# def data():
-#     return static_file("data/rawCoordinates.json", root='.')    
+@get('/data/turnstile-gtfs-mapping.json')
+def turnstile():
+    return static_file("data/turnstile-gtfs-mapping.json", root='.')    
 
 @get('/<name>')
 def static (name="index.html"):

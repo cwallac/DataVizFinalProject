@@ -1,0 +1,35 @@
+
+p {
+  color: white;
+  margin: 50px;
+}
+
+a {
+  color: #4FDEF2;
+}
+
+.axis {
+  fill: gray;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+}
+
+.axis .halo {
+  stroke: gray;
+  stroke-width: 4px;
+  stroke-linecap: round;
+}
+
+.slider .handle path {
+  stroke: gray;
+  stroke-width: 3px;
+  stroke-linecap: round;
+  pointer-events: none;
+}
+
+.slider .handle text {
+  fill: gray;
+  text-align: center;
+  font-size: 18px;
+}
