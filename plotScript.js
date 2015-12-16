@@ -64,10 +64,30 @@ function run () {
 
 }
 
+function convertToHour(timeValue) {
+    var minutesScale = d3.scale.linear()
+        .domain([0,1])
+        .range([0,60]);
+    //Fom 15.5
+    return Math.floor(timeValue) + ":" + minutesScale(timeValue) + ":00";
+}
+
 function drawSlider() {
 	d3.select('#timeSlider').call(d3.slider().axis(true).min(0).max(24).step(.25).value([12,13]).on("slide", function(evt, value) {
   		console.log("START " + value[ 0 ]);
   		console.log("STOP " +  value[ 1 ]);
+
+    var start = "2014-02-01 " + convertToHour(value[0]);
+    var end = "2014-02-01 " + convertToHour(value[1]);
+
+
+    d3.json("/data")
+        .header("Content-Type", "application/json")
+        .post(JSON.stringify({start: start, end: end}), function(error, data) {
+      
+        console.log("error", error);
+        console.log("data", data);
+    });
 	}));
 }
 
