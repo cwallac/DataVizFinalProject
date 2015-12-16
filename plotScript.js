@@ -22,7 +22,9 @@ var MBTA_NETWORK = [];
 var MBTA_MAPPING = {};
 var GLOBAL = {data : {},
             maxEntry: 0,
-            maxExit:0 }
+            maxExit:0,
+            showEntry: true 
+        } 
 
 var DATASET_LOADED = 0;
 var DATASET_MAX = 3;
@@ -30,6 +32,19 @@ var DATE_INFO = {
     startTime: "04:32:00",
     endTime: "14:32:00",
     date: '2014-02-15'
+}
+
+function toggle(){
+    d3.select('button').on('click', function() {
+        GLOBAL.showEntry = !GLOBAL.showEntry
+        drawMap();
+        if (GLOBAL.showEntry){
+            d3.select(this).text("Entries");
+        } else {
+            d3.select(this).text("Exits");
+        }
+
+    });
 }
 
 
@@ -73,7 +88,6 @@ function drawDateSlider() {
         .tickValues([timeScale.domain()[0], timeScale.domain()[1]]))
         .select(".domain")
         .select(function() {
-            console.log(this);
             return this.parentNode.appendChild(this.cloneNode(true));
         })
         .attr("class", "halo");
@@ -139,6 +153,7 @@ function run () {
 
     drawDateSlider();
     drawTimeSlider();
+    toggle();
 
 	d3.select(".container")
 		.append("svg")
@@ -194,7 +209,7 @@ function drawMap() {
     data = []
 
     var radiusScale = d3.scale.linear()
-    .domain([0,GLOBAL.maxEntry])
+    .domain([0,(GLOBAL.showEntry ? GLOBAL.maxEntry : GLOBAL.maxExit)])
     .range([3, 30]);
 
     d3.entries(MBTA_COORD).forEach(function(value){
@@ -238,7 +253,8 @@ function drawMap() {
                     .attr("transform",d3.select(this.parentNode).attr("transform"));
                 console.log("yo chris");
                 this.style.fill = "#772310";
-                showToolTip(SVG_SCALE(parseFloat(d.value[0])), SVG_SCALE(parseFloat(d.value[1])), d.station, d.sumEntries.toString());
+                showToolTip(SVG_SCALE(parseFloat(d.value[0])), SVG_SCALE(parseFloat(d.value[1])), d.station, 
+                    GLOBAL.showEntry ? d.sumEntries.toString() : d.sumExits.toString());
             })
             .on("mouseout", function(d) {
                 hideToolTip();
@@ -252,7 +268,7 @@ function drawMap() {
                 }
             })
     		.attr("r", function(d){
-                return radiusScale(d.sumEntries);
+                return radiusScale(GLOBAL.showEntry ? d.sumEntries : d.sumExits);
                 
             });
 

@@ -55,8 +55,6 @@ def pullData (start, end):
         maxEntry = max(set([r["sumEntries"] for r in data]))
         maxExit = max(set([r["sumExits"] for r in data]))    
 
-
-
         return {"data":data,
                 "maxEntry": maxEntry,
                 "maxExit": maxExit
@@ -70,7 +68,6 @@ def pullData (start, end):
 
 @post('/data')
 def data():
-    print "sup"
     start = request.json.get("start")
     end = request.json.get("end")
     return pullData(start, end)
