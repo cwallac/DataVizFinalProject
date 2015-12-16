@@ -49,7 +49,10 @@ function drawDateSlider() {
     var brush = d3.svg.brush()
         .x(timeScale)
         .extent([startingValue, startingValue])
-        .on("brush", brushed);
+        .on("brush", brushed)
+        .on("brushend", function() {
+            requestData();
+        });
 
 
     dateSlider.append("g")
@@ -104,7 +107,7 @@ function drawDateSlider() {
             value = timeScale.invert(d3.mouse(this)[0]);
             brush.extent([value, value]);
             DATE_INFO.date = d3.time.format("%Y-%m-%d")(value);
-            requestData();
+            
         }
 
         handle.attr("transform", "translate(" + timeScale(value) + ",0)");
@@ -248,7 +251,7 @@ function drawMap() {
 			var firstY = firstNode.attr("cy");
 			var secondX = secondNode.attr("cx");
 			var secondY = secondNode.attr("cy");
-			var positions = accountForStations(firstX, firstY, secondX, secondY, 5, 5);
+			var positions = accountForStations(firstX, firstY, secondX, secondY, firstNode.attr("r"), secondNode.attr("r"));
 			mbtaMap.append("line")
 				.attr("x1", positions["x1"])
 				.attr("x2", positions["x2"])
