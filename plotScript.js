@@ -68,8 +68,17 @@ function convertToHour(timeValue) {
     var minutesScale = d3.scale.linear()
         .domain([0,1])
         .range([0,60]);
-    //Fom 15.5
-    return Math.floor(timeValue) + ":" + minutesScale(timeValue) + ":00";
+    var minutes = minutesScale(timeValue % 1)
+    var hours = Math.floor(timeValue);
+    
+    if (minutes === 0) {
+        minutes = "00";
+    }
+
+    if (hours < 10) {
+        hours = "0" + hours;
+    }
+    return  hours + ":" + minutes + ":00";
 }
 
 function drawSlider() {
@@ -79,6 +88,8 @@ function drawSlider() {
 
     var start = "2014-02-01 " + convertToHour(value[0]);
     var end = "2014-02-01 " + convertToHour(value[1]);
+    console.log(start);
+    console.log(end);
 
 
     d3.json("/data")
