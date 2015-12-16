@@ -35,6 +35,7 @@ var DATE_INFO = {
 }
 
 function toggle(){
+    // function to toggle between showing number of entries and exits
     d3.select('button').on('click', function() {
         GLOBAL.showEntry = !GLOBAL.showEntry
         drawMap();
@@ -49,8 +50,10 @@ function toggle(){
 
 
 function drawDateSlider() {
-
+    // var s = computeSizes()
     var dateSlider = d3.select("#dateSlider");
+    dateSlider
+        .attr
 
     formatDate = d3.time.format("%a %b %d");
 // scale function
@@ -122,8 +125,7 @@ function drawDateSlider() {
         if (d3.event.sourceEvent) { // not a programmatic event
             value = timeScale.invert(d3.mouse(this)[0]);
             brush.extent([value, value]);
-            DATE_INFO.date = d3.time.format("%Y-%m-%d")(value);
-            
+            DATE_INFO.date = d3.time.format("%Y-%m-%d")(value);   
         }
 
         handle.attr("transform", "translate(" + timeScale(value) + ",0)");
@@ -133,6 +135,8 @@ function drawDateSlider() {
 }
 
 function requestData() {
+    // makes the request to our backend with the start and the end date which are extracted\
+    // from the sliders
     var start = DATE_INFO.date + " " + DATE_INFO.startTime;
     var end = DATE_INFO.date + " " + DATE_INFO.endTime;
         d3.json("/data")
@@ -141,11 +145,8 @@ function requestData() {
             GLOBAL.data = data.data;
             GLOBAL.maxEntry = data.maxEntry;
             GLOBAL.maxExit = data.maxExit;
-            console.log("error", error);
-            console.log("data", data);
 
             drawMap();
-            
     });
 }
 
@@ -162,14 +163,13 @@ function run () {
 		.attr("width",SVG_SIZE)
 		.attr("height", SVG_SIZE)
 
+    // load all of the files that we need from the data folder
     d3.json("data/turnstile-gtfs-mapping.json", function(json) {
         MBTA_MAPPING = json;
-
         d3.json("data/rawCoordinates.json", function(json) {
         MBTA_COORD = json;
             d3.json("data/stationPaths.json", function(json) {
                 MBTA_NETWORK = json;
-
                     requestData();
             });
     });
@@ -194,24 +194,26 @@ function convertToHour(timeValue) {
 }
 
 function drawTimeSlider() {
-	d3.select('#timeSlider').call(d3.slider().axis(true).min(0).max(24).step(.25).value([12,13]).on("slideend", function(evt, value) {
+	d3.select('#timeSlider').call(d3.slider().axis(true).min(0).max(24).step(.25).value([12,13])
+        .on("slideend", function(evt, value) {
 
-    DATE_INFO.endTime = convertToHour(value[1]);
-    DATE_INFO.startTime = convertToHour(value[0]);
+            DATE_INFO.endTime = convertToHour(value[1]);
+            DATE_INFO.startTime = convertToHour(value[0]);
 
-    requestData();
-
-	}));
+            requestData();
+    	}));
 }
 
 
 function drawMap() {
-    data = []
+    var data = []
 
+    // scale the circles correctly depending on the max
     var radiusScale = d3.scale.linear()
-    .domain([0,(GLOBAL.showEntry ? GLOBAL.maxEntry : GLOBAL.maxExit)])
-    .range([3, 30]);
+        .domain([0,(GLOBAL.showEntry ? GLOBAL.maxEntry : GLOBAL.maxExit)])
+        .range([3, 30]);
 
+    // combine the mbta map data with entries and exit data
     d3.entries(MBTA_COORD).forEach(function(value){
         GLOBAL.data.forEach(function(station){
             if (MBTA_MAPPING[station.station] === value.key){
@@ -223,54 +225,57 @@ function drawMap() {
             }
         });
     });
+
+    // clears previous graph
     d3.select("#mbtaMap").html("");
+
     d3.select("#mbtaMap").selectAll("g")
     	.data(data)
     	.enter()
     	.append("g")
-    		.append("circle")
-    		.attr("cx",function(d) {
-    			return SVG_SCALE(parseFloat(d.value[0]));
-    		})
-    		.attr("cy", function(d) {
-    			return SVG_SCALE(parseFloat(d.value[1]));
-    		})
-    		.attr("id", function(d) {
-    			return d.key;
-    		})
-    		.attr("fill", function(d) {
-    			for (var color = 0; color < MBTA_NETWORK.length; color ++) {
-    				for (var i =0; i < MBTA_NETWORK[color].length; i++) {
-    					if (d.key == MBTA_NETWORK[color][i]) {
-    						return MBTA_COLOR[color];
-    					}
-    						
-    				}
-    			}
-    		})
-            .on("mouseover", function(d) {
-                d3.selectAll(".tooltip1")
-                    .attr("transform",d3.select(this.parentNode).attr("transform"));
-                console.log("yo chris");
-                this.style.fill = "#772310";
-                showToolTip(SVG_SCALE(parseFloat(d.value[0])), SVG_SCALE(parseFloat(d.value[1])), d.station, 
-                    GLOBAL.showEntry ? d.sumEntries.toString() : d.sumExits.toString());
-            })
-            .on("mouseout", function(d) {
-                hideToolTip();
-                for (var color = 0; color < MBTA_NETWORK.length; color ++) {
-                    for (var i =0; i < MBTA_NETWORK[color].length; i++) {
-                        if (d.key == MBTA_NETWORK[color][i]) {
-                            this.style.fill = MBTA_COLOR[color];
-                        }
-                            
+		.append("circle")
+		.attr("cx",function(d) {
+			return SVG_SCALE(parseFloat(d.value[0]));
+		})
+		.attr("cy", function(d) {
+			return SVG_SCALE(parseFloat(d.value[1]));
+		})
+		.attr("id", function(d) {
+			return d.key;
+		})
+		.attr("fill", function(d) {
+			for (var color = 0; color < MBTA_NETWORK.length; color ++) {
+				for (var i =0; i < MBTA_NETWORK[color].length; i++) {
+					if (d.key == MBTA_NETWORK[color][i]) {
+						return MBTA_COLOR[color];
+					}
+						
+				}
+			}
+		})
+        .on("mouseover", function(d) {
+            d3.selectAll(".tooltip1")
+                .attr("transform",d3.select(this.parentNode).attr("transform"));
+            this.style.fill = "#772310";
+            showToolTip(SVG_SCALE(parseFloat(d.value[0])), SVG_SCALE(parseFloat(d.value[1])), d.station, 
+                GLOBAL.showEntry ? d.sumEntries.toString() : d.sumExits.toString());
+        })
+        .on("mouseout", function(d) {
+            hideToolTip();
+            for (var color = 0; color < MBTA_NETWORK.length; color ++) {
+                for (var i =0; i < MBTA_NETWORK[color].length; i++) {
+                    if (d.key == MBTA_NETWORK[color][i]) {
+                        this.style.fill = MBTA_COLOR[color];
                     }
+                        
                 }
-            })
-    		.attr("r", function(d){
-                return radiusScale(GLOBAL.showEntry ? d.sumEntries : d.sumExits);
-                
-            });
+            }
+        })
+		.attr("r", function(d){
+            // radius depends on the entry or exit data
+            return radiusScale(GLOBAL.showEntry ? d.sumEntries : d.sumExits);
+            
+        });
 
     var mbtaMap = d3.select("#mbtaMap");
     for (var color = 0; color < MBTA_NETWORK.length; color ++) {
@@ -354,11 +359,6 @@ function showToolTip (cx,cy,text1,text2) {
         box.attr("x", cx - correctWidth/2);
         stationText.attr("x");
     }
-
-
-
-
-
 
 }
 
