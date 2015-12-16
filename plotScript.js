@@ -2,7 +2,7 @@ window.addEventListener("load",run,false);
 
 var DATE_SLIDER_HEIGHT = 100;
 var SVG_SIZE = 1000;
-var SVG_MARGIN = 20;
+var SVG_MARGIN = 30;
 var SVG_SCALE = d3.scale.linear()
     .domain([0,15])
     .range([SVG_MARGIN,SVG_SIZE - SVG_MARGIN]);
@@ -331,22 +331,22 @@ function showToolTip (cx,cy,text1,text2) {
 
     var stationText = svg.append("text");
     stationText
-    .attr("class","tooltip1")
-    .attr("x",cx + X_OFFSET)
-    .attr("y",yDirection * Y_OFFSET+cy-7)
-    .attr("dy","0.3em")
-    .style("text-anchor","middle")
-    .style("font-size",24)
-    .text(text1);
+        .attr("class","tooltip1")
+        .attr("x",cx + X_OFFSET)
+        .attr("y",yDirection * Y_OFFSET+cy-7)
+        .attr("dy","0.3em")
+        .style("text-anchor","middle")
+        .style("font-size",24)
+        .text(text1);
 
     svg.append("text")
-    .attr("class","tooltip1")
-    .attr("x",cx + X_OFFSET)
-    .attr("y",yDirection * Y_OFFSET+cy+20)
-    .attr("dy","0.3em")
-    .style("text-anchor","middle")
-    .style("font-size",20)
-    .text(text2);
+        .attr("class","tooltip1")
+        .attr("x",cx + X_OFFSET)
+        .attr("y",yDirection * Y_OFFSET+cy+20)
+        .attr("dy","0.3em")
+        .style("text-anchor","middle")
+        .style("font-size",20)
+        .text(GLOBAL.showEntry ? "Entries: " + text2: "Exits: " + text2);
 
     if (parseInt(box.attr("width")) < stationText.node().getComputedTextLength()) {
         var correctWidth = stationText.node().getComputedTextLength() + 15;
