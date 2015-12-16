@@ -61,6 +61,17 @@ def data():
     end = request.json.get("end")
     return pullData(start, end)
 
+@get('/data/rawCoordinates.json')
+def data():
+    return static_file("data/rawCoordinates.json", root='.')    
+
+@get('/data/stationPaths.json')
+def data():
+    return static_file("data/stationPaths.json", root='.')    
+
+# @get('/data/rawCoordinates.json')
+# def data():
+#     return static_file("data/rawCoordinates.json", root='.')    
 
 @get('/<name>')
 def static (name="index.html"):

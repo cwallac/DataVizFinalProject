@@ -27,7 +27,7 @@ function run () {
     var end = "2014-02-01 05:32:00";
 
 
-    d3.json("/data")
+    d3.json("/date")
         .header("Content-Type", "application/json")
         .post(JSON.stringify({start: start, end: end}), function(error, data) {
       
