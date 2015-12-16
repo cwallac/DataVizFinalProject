@@ -70,6 +70,7 @@ def pullData (start, end):
 
 @post('/data')
 def data():
+    print "sup"
     start = request.json.get("start")
     end = request.json.get("end")
     return pullData(start, end)

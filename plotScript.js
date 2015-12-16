@@ -119,7 +119,7 @@ function requestData() {
         d3.json("/data")
         .header("Content-Type", "application/json")
         .post(JSON.stringify({start: start, end: end}), function(error, data) {
-              GLOBAL.data = data.data;
+            GLOBAL.data = data.data;
             GLOBAL.maxEntry = data.maxEntry;
             GLOBAL.maxExit = data.maxExit;
             console.log("error", error);
@@ -134,7 +134,6 @@ function run () {
 
     drawDateSlider();
     drawTimeSlider();
-
 
 	d3.select(".container")
 		.append("svg")
@@ -151,15 +150,9 @@ function run () {
                 MBTA_NETWORK = json;
 
                     requestData();
-
-                
             });
-
     });
-    })
-
-
-
+    });
 }
 
 function convertToHour(timeValue) {
@@ -234,10 +227,11 @@ function drawMap() {
     				}
     			}
     		})
-<<<<<<< HEAD
-            .on("mouseover", function(d) {
+            .on("mouseover", function(d, station, sumEntries) {
+                console.log(d);
+
                 this.style.fill = "#772310";
-                showToolTip(SVG_SCALE(parseFloat(d.value[0])), SVG_SCALE(parseFloat(d.value[1])), "Station", "Entries");
+                showToolTip(SVG_SCALE(parseFloat(d.value[0])), SVG_SCALE(parseFloat(d.value[1])), station, sumEntries.toString());
             })
             .on("mouseout", function(d) {
                 hideToolTip();
@@ -250,13 +244,10 @@ function drawMap() {
                     }
                 }
             })
-    		.attr("r", 5);
-=======
     		.attr("r", function(d){
                 return radiusScale(d.sumEntries);
                 
             });
->>>>>>> origin/ChrisBranch
 
     var mbtaMap = d3.select("#mbtaMap");
     for (var color = 0; color < MBTA_NETWORK.length; color ++) {
