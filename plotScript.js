@@ -22,6 +22,19 @@ var DATASET_MAX = 2;
     
 
 function run () {
+
+    var start = "2014-02-01 04:32:00";
+    var end = "2014-02-01 05:32:00";
+
+
+    d3.json("/data")
+        .header("Content-Type", "application/json")
+        .post(JSON.stringify({start: start, end: end}), function(error, data) {
+      
+        console.log("error", error);
+        console.log("data", data);
+    });
+
 	d3.select(".container")
 		.append("svg")
 		.attr("id","mbtaMap")
