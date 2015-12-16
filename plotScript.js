@@ -140,6 +140,7 @@ function run () {
 
 	d3.select(".container")
 		.append("svg")
+        .style("margin","auto")
 		.attr("id","mbtaMap")
 		.attr("width",SVG_SIZE)
 		.attr("height", SVG_SIZE)
