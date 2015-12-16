@@ -230,11 +230,12 @@ function drawMap() {
     				}
     			}
     		})
-            .on("mouseover", function(d, station, sumEntries) {
-                console.log(d);
-
+            .on("mouseover", function(d) {
+                d3.selectAll(".tooltip1")
+                    .attr("transform",d3.select(this.parentNode).attr("transform"));
+                console.log("yo chris");
                 this.style.fill = "#772310";
-                showToolTip(SVG_SCALE(parseFloat(d.value[0])), SVG_SCALE(parseFloat(d.value[1])), station, sumEntries.toString());
+                showToolTip(SVG_SCALE(parseFloat(d.value[0])), SVG_SCALE(parseFloat(d.value[1])), d.station, d.sumEntries.toString());
             })
             .on("mouseout", function(d) {
                 hideToolTip();
@@ -281,9 +282,9 @@ function showToolTip (cx,cy,text1,text2) {
     var svg = d3.select("#mbtaMap");
 
     svg.append("rect")
-    //.attr("class","tooltip")
+    .attr("class","tooltip1")
     .attr("x",cx-TOOLTIP.width/2)
-    .attr("y",cy-TOOLTIP.height/2)
+    .attr("y",50+cy-TOOLTIP.height/2)
     .attr("width",TOOLTIP.width)
     .attr("height",TOOLTIP.height)
     .style("fill","#99959b")
@@ -291,17 +292,17 @@ function showToolTip (cx,cy,text1,text2) {
     .style("stroke-width","2px");
 
     svg.append("text")
-    //.attr("class","tooltip")
+    .attr("class","tooltip1")
     .attr("x",cx)
-    .attr("y",cy-7)
+    .attr("y",50+cy-7)
     .attr("dy","0.3em")
     .style("text-anchor","middle")
     .text(text1);
 
     svg.append("text")
-    //.attr("class","tooltip")
+    .attr("class","tooltip1")
     .attr("x",cx)
-    .attr("y",cy+7)
+    .attr("y",50+cy+7)
     .attr("dy","0.3em")
     .style("text-anchor","middle")
     .text(text2);
@@ -309,8 +310,7 @@ function showToolTip (cx,cy,text1,text2) {
 }
 
 function hideToolTip () {
-    d3.selectAll("rect").remove();
-    d3.selectAll("text").remove();
+    d3.selectAll(".tooltip1").remove();
 }
 
 /**
