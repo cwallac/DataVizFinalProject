@@ -7,6 +7,7 @@ var SVG_SCALE = d3.scale.linear()
     .domain([0,15])
     .range([SVG_MARGIN,SVG_SIZE - SVG_MARGIN]);
 
+
 var MBTA_COLOR = {
 	0: "red",
 	1: "red",
@@ -16,9 +17,13 @@ var MBTA_COLOR = {
 
 var MBTA_COORD = {};
 var MBTA_NETWORK = [];
+var MBTA_MAPPING = {};
+var GLOBAL = {data : {},
+            maxEntry: 0,
+            maxExit:0 }
 
 var DATASET_LOADED = 0;
-var DATASET_MAX = 2;
+var DATASET_MAX = 3;
 var DATE_INFO = {
     startTime: "04:32:00",
     endTime: "14:32:00",
@@ -114,27 +119,22 @@ function requestData() {
         d3.json("/data")
         .header("Content-Type", "application/json")
         .post(JSON.stringify({start: start, end: end}), function(error, data) {
-      
-        console.log("error", error);
-        console.log("data", data);
+              GLOBAL.data = data.data;
+            GLOBAL.maxEntry = data.maxEntry;
+            GLOBAL.maxExit = data.maxExit;
+            console.log("error", error);
+            console.log("data", data);
+
+            drawMap();
+            
     });
 }
 
 function run () {
 
     drawDateSlider();
+    drawTimeSlider();
 
-    var start = "2014-02-01 04:32:00";
-    var end = "2014-02-01 05:32:00";
-
-
-    d3.json("/date")
-        .header("Content-Type", "application/json")
-        .post(JSON.stringify({start: start, end: end}), function(error, data) {
-      
-        console.log("error", error);
-        console.log("data", data);
-    });
 
 	d3.select(".container")
 		.append("svg")
@@ -142,26 +142,23 @@ function run () {
 		.attr("width",SVG_SIZE)
 		.attr("height", SVG_SIZE)
 
-	d3.json("data/rawCoordinates.json", function(json) {
-    console.log(json);
-    MBTA_COORD = json;
-    DATASET_LOADED += 1;
-    if (DATASET_LOADED === DATASET_MAX) {
-    	drawMap();
-    	drawTimeSlider();
-    }
+    d3.json("data/turnstile-gtfs-mapping.json", function(json) {
+        MBTA_MAPPING = json;
 
-});
+        d3.json("data/rawCoordinates.json", function(json) {
+        MBTA_COORD = json;
+            d3.json("data/stationPaths.json", function(json) {
+                MBTA_NETWORK = json;
 
-	d3.json("data/stationPaths.json", function(json) {
-		console.log(json);
-		MBTA_NETWORK = json;
-		DATASET_LOADED += 1;
-		if (DATASET_LOADED === DATASET_MAX) {
-			drawMap();
-			drawTimeSlider();
-		}
-	})
+                    requestData();
+
+                
+            });
+
+    });
+    })
+
+
 
 }
 
@@ -183,21 +180,38 @@ function convertToHour(timeValue) {
 }
 
 function drawTimeSlider() {
-	d3.select('#timeSlider').call(d3.slider().axis(true).min(0).max(24).step(.25).value([12,13]).on("slide", function(evt, value) {
+	d3.select('#timeSlider').call(d3.slider().axis(true).min(0).max(24).step(.25).value([12,13]).on("slideend", function(evt, value) {
 
     DATE_INFO.endTime = convertToHour(value[1]);
     DATE_INFO.startTime = convertToHour(value[0]);
 
     requestData();
 
-
-
 	}));
 }
 
+
 function drawMap() {
+    data = []
+
+    var radiusScale = d3.scale.linear()
+    .domain([0,GLOBAL.maxEntry])
+    .range([3, 30]);
+
+    d3.entries(MBTA_COORD).forEach(function(value){
+        GLOBAL.data.forEach(function(station){
+            if (MBTA_MAPPING[station.station] === value.key){
+                // merge two objects
+                for(var attrname in station){
+                    value[attrname] = station[attrname];
+                }
+                data.push(value);
+            }
+        });
+    });
+    d3.select("#mbtaMap").html("");
     d3.select("#mbtaMap").selectAll("g")
-    	.data(d3.entries(MBTA_COORD))
+    	.data(data)
     	.enter()
     	.append("g")
     		.append("circle")
@@ -220,12 +234,14 @@ function drawMap() {
     				}
     			}
     		})
-    		.attr("r", 5);
+    		.attr("r", function(d){
+                return radiusScale(d.sumEntries);
+                
+            });
 
     var mbtaMap = d3.select("#mbtaMap");
     for (var color = 0; color < MBTA_NETWORK.length; color ++) {
     	for (var i =0; i < MBTA_NETWORK[color].length - 1; i++) {
-    		console.log("test");
     		var firstNode = d3.select("#" + MBTA_NETWORK[color][i]);
     		var secondNode = d3.select("#" + MBTA_NETWORK[color][i+1]);
     		var firstX  = firstNode.attr("cx");
@@ -251,15 +267,11 @@ function drawMap() {
 */
 function accountForStations(x1, y1, x2, y2, radius1, radius2) {
 	var angle = Math.atan2(y2 - y1, x2 - x1);
-	console.log(angle*180/3.14);
-	console.log(Math.sin(angle));
-	console.log(Math.cos(angle));
 	var calculatedObject = {};
 	calculatedObject["x1"] = parseFloat(x1) + Math.cos(angle) * radius1;
 	calculatedObject["x2"] = parseFloat(x2) - Math.cos(angle) * radius2;
 	calculatedObject["y1"] = parseFloat(y1) + Math.sin(angle) * radius1;
 	calculatedObject["y2"] = parseFloat(y2) - Math.sin(angle) * radius2;
-	console.log(calculatedObject);
 	return calculatedObject;
 
 }
